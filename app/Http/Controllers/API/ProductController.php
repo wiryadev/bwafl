@@ -27,20 +27,19 @@ class ProductController extends Controller
             if ($product) {
                 return ResponseFormatter::success(
                     $product,
-                    'Data product berhasil diambil'
+                    "Data produk berhasil diambil"
                 );
             } else {
                 return ResponseFormatter::error(
                     null,
-                    'Data produk tidak ditemukan',
+                    "Data produk tidak ditemukan",
                     404
                 );
             }
-            
         }
 
         $products = Product::with(['categories', 'galleries']);
-        
+
         if ($name) {
             $products->where('name', 'like', '%' . $name . '%');
         }
@@ -67,7 +66,7 @@ class ProductController extends Controller
 
         return ResponseFormatter::success(
             $products->paginate($limit),
-            'Data product berhasil diambil'
+            "Data list produk berhasil diambil"
         );
     }
 }
