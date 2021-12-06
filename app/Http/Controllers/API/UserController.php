@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Laravel\Fortify\Rules\Password;
 use App\Http\Controllers\Controller;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -51,6 +52,54 @@ class UserController extends Controller
                 ],
                 "Registrasi Gagal",
                 500
+            );
+        }
+    }
+
+    public function login(Request $request)
+    {
+        try {
+            $request->validate([
+                'email' => "email|required",
+                'password' => "required",
+            ]);
+
+            $credentials = request(['email', 'password']);
+
+            if (!Auth::attempt($credentials)) {
+                return ResponseFormatter::error(
+                    [
+                        'message' => "Unauthorized"
+                    ],
+                    "Authentication Failed",
+                    401,
+                );
+            }
+
+            $user = User::where('email', $request->email)->first();
+
+            if (!Hash::check($request->password, $user->password)) {
+                throw new Exception("Invalid Credentials");
+            }
+
+            $tokenResult = $user->createToken('authToken')->plainTextToken;
+
+            return ResponseFormatter::success(
+                [
+                    'access_token' => $tokenResult,
+                    'token_type' => "Bearer",
+                    'user' => $user,
+                ],
+                "Authentication Success"
+            );
+        } catch (Exception $e) {
+            return ResponseFormatter::error(
+                [
+                    'message' => "Something went wrong",
+                    'error' => $e,
+                ],
+                "Authentication Failed",
+                401,
             );
         }
     }
